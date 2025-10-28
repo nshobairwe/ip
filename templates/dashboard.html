@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Ping Dashboard</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-sans">
+  <header class="bg-blue-600 text-white py-4 shadow-md">
+    <h1 class="text-3xl font-bold text-center">Live Ping Dashboard</h1>
+  </header>
+
+  <main class="container mx-auto mt-8 px-4">
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+        <thead class="bg-blue-500 text-white">
+          <tr>
+            <th class="px-4 py-2 text-left">Region</th>
+            <th class="px-4 py-2 text-left">Type</th>
+            <th class="px-4 py-2 text-left">IP</th>
+            <th class="px-4 py-2 text-left">Status</th>
+          </tr>
+        </thead>
+        <tbody id="results" class="text-gray-700">
+          <!-- Rows will be dynamically added -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    async function fetchData() {
+      try {
+        const resp = await fetch('https://ip-9c2q.onrender.com/dashboard');
+        const data = await resp.json();
+        const tbody = document.getElementById('results');
+        tbody.innerHTML = '';
+
+        // Loop over each region
+        for (const region in data) {
+          data[region].forEach(entry => {
+            const tr = document.createElement('tr');
+            tr.className = 'border-b hover:bg-gray-100';
+
+            // Region
+            const tdRegion = document.createElement('td');
+            tdRegion.className = 'px-4 py-2 font-medium';
+            tdRegion.textContent = region;
+            tr.appendChild(tdRegion);
+
+            // Type
+            const tdType = document.createElement('td');
+            tdType.className = 'px-4 py-2';
+            tdType.textContent = entry.label;
+            tr.appendChild(tdType);
+
+            // IP
+            const tdIP = document.createElement('td');
+            tdIP.className = 'px-4 py-2';
+            tdIP.textContent = entry.ip;
+            tr.appendChild(tdIP);
+
+            // Status with color
+            const tdStatus = document.createElement('td');
+            tdStatus.className = 'px-4 py-2 flex items-center gap-2';
+            const icon = document.createElement('span');
+            icon.className = 'material-icons';
+            if (entry.status.includes('ACTIVE')) {
+              icon.textContent = 'check_circle';
+              icon.classList.add('text-green-500');
+            } else if (entry.status.includes('INACTIVE')) {
+              icon.textContent = 'cancel';
+              icon.classList.add('text-red-500');
+            } else {
+              icon.textContent = 'error';
+              icon.classList.add('text-yellow-500');
+            }
+            tdStatus.appendChild(icon);
+
+            const textSpan = document.createElement('span');
+            textSpan.textContent = entry.status;
+            tdStatus.appendChild(textSpan);
+
+            tr.appendChild(tdStatus);
+
+            tbody.appendChild(tr);
+          });
+        }
+      } catch (err) {
+        console.error('Failed to fetch data:', err);
+      }
+    }
+
+    // Refresh every 5 seconds
+    setInterval(fetchData, 5000);
+    fetchData();
+  </script>
+</body>
+</html>
